@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Constituency Parser</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="logo">Constituency Parser<span></span></div>
+            
+        </aside>
+
+        <main class="content">
+            <section class="card">
+                <div class="card-label">ASL MATN</div>
+                <textarea id="inputText" placeholder="Tahlil uchun gapni kiriting..."></textarea>
+                <button id="runBtn" onclick="startAnalysis()">TAHLILNI BOSHLASH</button>
+            </section>
+
+            <section class="card visual-card">
+                <div class="card-label">MATN TAHLILI</div>
+                <div id="treeCanvas" class="canvas">
+        
+                </div>
+                <div class="card-actions">
+                    <button class="btn-secondary" onclick="copyTableData()">NUSXA OLISH</button>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-label">LINGVISTIK TA'MINOT</div>
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Sent_ID</th>
+                                <th>Token_ID</th>
+                                <th>Token</th>
+                                <th>BI</th>
+                                <th>Lemma</th>
+                                <th>Tag</th>
+                                <th>Chunk Tag [cite: 1, 5]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
