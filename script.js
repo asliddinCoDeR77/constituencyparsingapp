@@ -1,15 +1,15 @@
 const API_KEY = "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";
 
-// Qat'iy qoidalar va namunalar bilan boyitilgan Prompt
+
 const SYSTEM_PROMPT = `
 Siz o'zbek tili uchun ixtisoslashgan, xato qilmaydigan "Constituency Parser" tizimisiz.
-Vazifangiz: Gapni tarkibiy qismlarga ajratish va grafik iyerarxiya hamda jadval yaratish[cite: 1, 4, 7].
+[cite_start]Vazifangiz: Gapni tarkibiy qismlarga ajratish va grafik iyerarxiya hamda jadval yaratish[cite: 1, 4, 7].
 
 QAT'IY QOIDALAR:
-1. Har doim gapni "S" (Gap) ildizidan boshlang[cite: 6, 9].
-2. Har bir so'z (token) NP (Otli birikma) yoki VP (Fe'lli birikma) ichida bo'lishi shart[cite: 5, 8].
+1. [cite_start]Har doim gapni "S" (Gap) ildizidan boshlang[cite: 6, 9].
+2. [cite_start]Har bir so'z (token) NP (Otli birikma) yoki VP (Fe'lli birikma) ichida bo'lishi shart[cite: 5, 8].
 3. Chunk tag: Birikmaning birinchi so'zi doim "B-", keyingilari "I-" bilan boshlanadi (Masalan: B-NP, I-NP).
-4. Taglar (POS): N (Ot), JJ (Sifat), VB (Fe'l), RR (Ravish), PRN (Olmosh), PUNCT (Tinish belgisi)[cite: 7, 9].
+4. [cite_start]Taglar (POS): N (Ot), JJ (Sifat), VB (Fe'l), RR (Ravish), PRN (Olmosh), PUNCT (Tinish belgisi)[cite: 7, 9].
 5. Tinish belgilari uchun: BI="B", Tag="PUNCT", Chunk="O".
 
 NAMUNA (Standard):
@@ -43,15 +43,49 @@ Output JSON:
 }
 `;
 
+async function checkLocalDatabase(inputText) {
+    try {
+        const response = await fetch('data.txt');
+        
+        if (!response.ok) return null;
+
+        const database = await response.json();
+        
+        const foundItem = database.find(item => 
+            item.input.trim().toLowerCase() === inputText.trim().toLowerCase()
+        );
+
+        return foundItem ? foundItem.output : null;
+
+    } catch (error) {
+        console.warn("Lokal baza (data.txt) o'qilmadi yoki mavjud emas. AI ishlatiladi.", error);
+        return null;
+    }
+}
+
 async function startAnalysis() {
     const text = document.getElementById('inputText').value;
     const btn = document.getElementById('runBtn');
+    
     if (!text.trim()) return;
 
     btn.disabled = true;
     btn.innerHTML = '<span class="loader"></span> TAHLIL QILINMOQDA...';
 
     try {
+        const localResult = await checkLocalDatabase(text);
+
+        if (localResult) {
+            console.log("Natija data.txt bazasidan olindi (Offline mode).");
+            renderTable(localResult.tokens);
+            drawTree(localResult.tree);
+            btn.disabled = false;
+            btn.innerText = "TAHLILNI BOSHLASH";
+            return; 
+        }
+
+        console.log("Bazadan topilmadi, AI ga so'rov yuborilmoqda...");
+        
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { 
@@ -64,9 +98,9 @@ async function startAnalysis() {
                     { role: "system", content: SYSTEM_PROMPT },
                     { role: "user", content: `Ushbu gapni yuqoridagi qat'iy namunaga mos tahlil qil: "${text}"` }
                 ],
-                temperature: 0.0, // Fantaziyani butkul o'chirish
-                top_p: 0.01,      // Faqat eng aniq variantni olish
-                seed: 12345,      // Generatsiyani qulflash
+                temperature: 0.0, 
+                top_p: 0.01,    
+                seed: 12345,      
                 response_format: { type: "json_object" }
             })
         });
@@ -74,7 +108,6 @@ async function startAnalysis() {
         const data = await response.json();
         const result = JSON.parse(data.choices[0].message.content);
 
-        // UI yangilash
         renderTable(result.tokens);
         drawTree(result.tree);
 
