@@ -1,4 +1,4 @@
-const API_KEY = "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";
+const API_KEY = "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";
 
 
 const SYSTEM_PROMPT = `
@@ -169,4 +169,5 @@ function drawTree(data) {
 
     svg.appendChild(build(data, 500, 40, 320));
     canvas.appendChild(svg);
+
 }
